@@ -1,0 +1,6 @@
+/dragnet
+/dragnet.exe
+dragnet-*.json
+dragnet-*.html
+*.test
+*.out
