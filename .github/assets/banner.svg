@@ -1,0 +1,71 @@
+<svg width="1280" height="320" viewBox="0 0 1280 320" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono','SFMono-Regular',Consolas,monospace">
+  <defs>
+    <!-- subtle CRT scanline overlay -->
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="none"/>
+      <rect width="4" height="1" y="0" fill="#ffffff" opacity="0.018"/>
+    </pattern>
+    <!-- sweep beam gradient -->
+    <linearGradient id="beam" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e8a33d" stop-opacity="0"/>
+      <stop offset="0.78" stop-color="#e8a33d" stop-opacity="0"/>
+      <stop offset="1" stop-color="#e8a33d" stop-opacity="0.16"/>
+    </linearGradient>
+    <radialGradient id="ping1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e8a33d" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#e8a33d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- substrate -->
+  <rect width="1280" height="320" fill="#0c0a08"/>
+  <rect width="1280" height="320" fill="url(#beam)"/>
+  <rect width="1280" height="320" fill="url(#scan)"/>
+
+  <!-- outer frame -->
+  <rect x="20.5" y="20.5" width="1239" height="279" fill="none" stroke="#2a2118" stroke-width="1"/>
+  <!-- corner crosshairs -->
+  <g stroke="#7a5a26" stroke-width="1">
+    <path d="M20 44 V20 H44"/>
+    <path d="M1236 20 H1260 V44"/>
+    <path d="M20 276 V300 H44"/>
+    <path d="M1236 300 H1260 V276"/>
+  </g>
+
+  <!-- top metadata rail -->
+  <line x1="20" y1="64" x2="1260" y2="64" stroke="#2a2118" stroke-width="1"/>
+  <text x="40" y="48" fill="#8a7c66" font-size="11" letter-spacing="3">[ NETWORK RECONNAISSANCE / UNIT D-01 ]</text>
+  <text x="1240" y="48" fill="#8a7c66" font-size="11" letter-spacing="3" text-anchor="end">REV 0.1.0</text>
+
+  <!-- wordmark -->
+  <text x="40" y="190" fill="#e8a33d" font-size="118" font-weight="800" letter-spacing="-4">DRAGNET</text>
+  <!-- registration mark as structural element -->
+  <text x="892" y="128" fill="#7a5a26" font-size="20">®</text>
+
+  <!-- tagline -->
+  <text x="44" y="232" fill="#e6dccb" font-size="17" letter-spacing="6">CAST THE NET</text>
+  <line x1="200" y1="227" x2="430" y2="227" stroke="#7a5a26" stroke-width="1"/>
+  <text x="44" y="262" fill="#8a7c66" font-size="12" letter-spacing="1.5">PORTABLE NETWORK SCANNER &#183; SINGLE STATIC BINARY &#183; NO INSTALL &#183; NO ADMIN</text>
+
+  <!-- right-side telemetry cluster -->
+  <g font-size="12" letter-spacing="1.5">
+    <text x="1240" y="108" fill="#8a7c66" text-anchor="end">DISCOVERY ......... ONLINE</text>
+    <text x="1240" y="132" fill="#8a7c66" text-anchor="end">PORT SCAN ......... TCP/CONNECT</text>
+    <text x="1240" y="156" fill="#8a7c66" text-anchor="end">TLS INSPECT ....... ARMED</text>
+    <text x="1240" y="180" fill="#8a7c66" text-anchor="end">HTTP AUDIT ........ ARMED</text>
+    <text x="1240" y="210" fill="#e8a33d" text-anchor="end">&gt;&gt;&gt; HOSTS UP : 04</text>
+  </g>
+
+  <!-- ping returns surfacing on the sweep -->
+  <circle cx="985" cy="244" r="20" fill="url(#ping1)"/>
+  <circle cx="985" cy="244" r="2.5" fill="#e8a33d"/>
+  <circle cx="1085" cy="236" r="14" fill="url(#ping1)"/>
+  <circle cx="1085" cy="236" r="2" fill="#e8a33d"/>
+  <circle cx="1158" cy="250" r="10" fill="url(#ping1)"/>
+  <circle cx="1158" cy="250" r="1.6" fill="#e8a33d"/>
+
+  <!-- bottom rail -->
+  <line x1="20" y1="276" x2="1260" y2="276" stroke="#2a2118" stroke-width="1"/>
+  <text x="40" y="293" fill="#8a7c66" font-size="10" letter-spacing="2.5">GO &#183; BUBBLE TEA TUI &#183; SELF-CONTAINED HTML REPORTS</text>
+  <text x="1240" y="293" fill="#8a7c66" font-size="10" letter-spacing="2.5" text-anchor="end">github.com/happygream/dragnet</text>
+</svg>
