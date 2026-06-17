@@ -71,6 +71,11 @@ func renderHTML(r model.Report) string {
 		fmt.Fprintf(&b, `<article class="host"><div class="host-head"><h2>%s</h2><span class="hn">%s</span><span class="rtt">%s</span></div>`,
 			html.EscapeString(h.IP), hostname, html.EscapeString(h.RTT))
 
+		if h.Honeypot {
+			fmt.Fprintf(&b, `<div class="decoy"><span class="decoy-tag">PROBABLE DECOY</span> %s</div>`,
+				html.EscapeString(h.HoneypotReason))
+		}
+
 		if len(h.OpenPorts) == 0 {
 			b.WriteString(`<p class="muted">No open ports found.</p></article>`)
 			continue
@@ -146,6 +151,8 @@ header{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--
 .host-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
 .host-head h2{margin:0;font-size:18px;color:var(--amber);letter-spacing:.04em}
 .hn{color:var(--muted)}
+.decoy{margin:-4px 0 14px 0;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.decoy-tag{background:rgba(217,83,79,.15);color:var(--bad);font-weight:700;letter-spacing:.08em;padding:2px 8px;border:1px solid var(--bad)}
 .rtt{margin-left:auto;color:var(--amber-dim);font-size:12px}
 table{width:100%;border-collapse:collapse;margin-bottom:14px}
 th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--line);padding:6px 8px}

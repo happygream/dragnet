@@ -43,6 +43,7 @@ var (
 
 type eventMsg scan.Event
 type tickMsg time.Time
+type autoQuitMsg struct{}
 
 // Model is the Bubble Tea model.
 type Model struct {
@@ -53,11 +54,13 @@ type Model struct {
 	hosts   map[string]*model.Host
 	order   []string
 	total   int
-	swept   int
-	note    string
-	done    bool
-	started time.Time
-	width   int
+	swept    int
+	note     string
+	done     bool
+	autoExit bool
+	started  time.Time
+	ended    time.Time
+	width    int
 
 	// final report paths, set by the program after Run via SetReportPaths
 	jsonPath string
@@ -65,7 +68,9 @@ type Model struct {
 }
 
 // New builds the initial model and kicks off the scan pipeline.
-func New(ctx context.Context, cfg scan.Config) Model {
+// When autoExit is true the TUI quits on its own shortly after the scan
+// finishes, rather than waiting for the user to press q.
+func New(ctx context.Context, cfg scan.Config, autoExit bool) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(amber)
@@ -73,12 +78,13 @@ func New(ctx context.Context, cfg scan.Config) Model {
 	p := progress.New(progress.WithoutPercentage(), progress.WithGradient("#7a5a26", "#e8a33d"))
 
 	return Model{
-		cfg:     cfg,
-		events:  scan.Run(ctx, cfg),
-		spin:    s,
-		prog:    p,
-		hosts:   map[string]*model.Host{},
-		started: time.Now(),
+		cfg:      cfg,
+		events:   scan.Run(ctx, cfg),
+		spin:     s,
+		prog:     p,
+		hosts:    map[string]*model.Host{},
+		started:  time.Now(),
+		autoExit: autoExit,
 	}
 }
 
@@ -162,10 +168,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.note = "error: " + ev.Err.Error()
 		case scan.EvFinished:
 			m.done = true
+			m.ended = time.Now()
 			m.note = "done"
+			if m.autoExit {
+				// Hold the final frame briefly so it's readable, then quit.
+				return m, tea.Tick(1200*time.Millisecond, func(time.Time) tea.Msg {
+					return autoQuitMsg{}
+				})
+			}
 			return m, nil
 		}
 		return m, waitEvent(m.events)
+	}
+
+	if _, ok := msg.(autoQuitMsg); ok {
+		return m, tea.Quit
 	}
 
 	return m, nil
@@ -210,11 +227,21 @@ func (m Model) View() string {
 	}
 
 	// footer
-	elapsed := time.Since(m.started).Round(time.Second)
-	foot := fmt.Sprintf("target %s  •  mode %s  •  elapsed %s  •  press q to quit",
-		m.cfg.Target, m.cfg.Mode, elapsed)
+	end := time.Now()
+	if m.done && !m.ended.IsZero() {
+		end = m.ended
+	}
+	elapsed := end.Sub(m.started).Round(time.Second)
+
+	hint := "press q to quit"
+	if m.done && m.autoExit {
+		hint = "finished, exiting"
+	}
+
+	foot := fmt.Sprintf("target %s  •  mode %s  •  elapsed %s  •  %s",
+		m.cfg.Target, m.cfg.Mode, elapsed, hint)
 	if m.done && m.htmlPath != "" {
-		foot = fmt.Sprintf("saved %s  •  press q to quit", m.htmlPath)
+		foot = fmt.Sprintf("saved %s  •  elapsed %s  •  %s", m.htmlPath, elapsed, hint)
 	}
 	b.WriteString("\n")
 	b.WriteString(footStyle.Render(foot))
@@ -234,6 +261,13 @@ func renderHost(h *model.Host) string {
 		hostnameSty.Render(name),
 		noteStyle.Render(h.RTT),
 	)
+
+	if h.Honeypot {
+		fmt.Fprintf(&b, "    %s  %s\n",
+			warnStyle.Render("⚠ PROBABLE DECOY"),
+			mutedStyle.Render(h.HoneypotReason),
+		)
+	}
 
 	if len(h.OpenPorts) == 0 {
 		return b.String()

@@ -55,6 +55,12 @@ type Host struct {
 	OpenPorts []PortState `json:"open_ports,omitempty"`
 	TLS       []TLSInfo   `json:"tls,omitempty"`
 	HTTP      []HTTPInfo  `json:"http,omitempty"`
+
+	// Honeypot is set when the host's response pattern suggests a decoy
+	// (many classic-service ports open, but services that normally greet
+	// stay silent). HoneypotReason explains the call.
+	Honeypot       bool   `json:"honeypot,omitempty"`
+	HoneypotReason string `json:"honeypot_reason,omitempty"`
 }
 
 // Report is the top-level saved artifact.

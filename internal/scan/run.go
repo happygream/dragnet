@@ -90,6 +90,8 @@ func Run(ctx context.Context, cfg Config) <-chan Event {
 					}
 				}
 			}
+			DetectHoneypot(h)
+
 			hc := *h
 			out <- Event{Kind: EvHostDone, Host: &hc, Note: "swept " + h.IP}
 		}

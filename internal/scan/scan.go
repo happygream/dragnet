@@ -126,7 +126,7 @@ func probe(ctx context.Context, ip string, port int, timeout time.Duration) (mod
 // grabBanner reads any greeting the service volunteers. For silent protocols
 // (HTTP) we send a minimal nudge first. Best-effort only; never blocks long.
 func grabBanner(conn net.Conn, port int) string {
-	_ = conn.SetDeadline(time.Now().Add(1200 * time.Millisecond))
+	_ = conn.SetDeadline(time.Now().Add(600 * time.Millisecond))
 
 	switch port {
 	case 80, 8080, 8000, 8081, 3000, 9000, 8888:

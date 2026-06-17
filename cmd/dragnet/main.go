@@ -27,6 +27,7 @@ func main() {
 		timeout  = flag.Duration("timeout", 800*time.Millisecond, "per-probe timeout")
 		outDir   = flag.String("out", ".", "directory for saved reports")
 		noTUI    = flag.Bool("no-tui", false, "plain output instead of the TUI")
+		keepOpen = flag.Bool("keep-open", false, "keep the TUI open after the scan finishes (default: exit automatically)")
 		showVer  = flag.Bool("version", false, "print version and exit")
 	)
 	flag.Parse()
@@ -66,7 +67,7 @@ func main() {
 	if *noTUI {
 		hosts, started = runPlain(ctx, cfg)
 	} else {
-		m := tui.New(ctx, cfg)
+		m := tui.New(ctx, cfg, !*keepOpen)
 		p := tea.NewProgram(m, tea.WithAltScreen())
 		final, err := p.Run()
 		if err != nil {

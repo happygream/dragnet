@@ -33,6 +33,8 @@ Windows machine, with no install and no administrator rights.
   cipher, expiry, plus self-signed and weak-protocol warnings.
 - **HTTP audit** — grades security headers (HSTS, CSP, X-Frame-Options and more) and
   scores each web port out of 100.
+- **Honeypot detection** — flags probable decoys: hosts exposing many classic lure
+  ports while staying silent on services that normally announce themselves.
 - **Reports** — every run writes a timestamped `dragnet-*.json` and a self-contained,
   styled `dragnet-*.html` you can open in any browser.
 
@@ -70,9 +72,11 @@ dragnet -target 10.0.0.5 -ports 22,80,443 -no-tui
 | `-timeout` | `800ms` | per-probe timeout |
 | `-out` | `.` | directory for saved reports (point it at your USB) |
 | `-no-tui` | `false` | plain log output instead of the TUI |
+| `-keep-open` | `false` | keep the TUI open after the scan finishes (default: exit automatically) |
 | `-version` | | print version and exit |
 
-In the TUI: `q`, `esc`, or `ctrl+c` to quit.
+In the TUI: `q`, `esc`, or `ctrl+c` to quit. By default the TUI exits on its own
+once the scan finishes; pass `-keep-open` to leave it up for scrolling.
 
 Drop the binary on the stick and point `-out` at the drive (e.g. `-out E:\`) so
 reports land on the USB, not the host you plugged into.
