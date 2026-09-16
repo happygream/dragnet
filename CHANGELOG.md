@@ -2,6 +2,22 @@
 
 All notable changes to dragnet are documented here.
 
+## [0.4.0] — 2026-09-16
+
+- Monitor mode: `dragnet monitor -target ... -interval 10m`. Runs scans on a
+  loop, diffs each against the last, and serves a live localhost web dashboard
+  (amber/noir) showing current hosts and a change timeline.
+- Change detection: host appeared / went dark, port opened / closed, TLS cert
+  crossing into the expiry-warning window, honeypot newly detected, device
+  fingerprint changed.
+- SQLite persistence (pure-Go `modernc.org/sqlite`, no CGO): scan snapshots and
+  change events survive restarts. `-db` sets the path.
+- Dashboard binds to `127.0.0.1:8787` by default; `-listen 0.0.0.0:PORT` to
+  reach it from another machine.
+- Robustness: each scan is bounded by a time budget, a tick is skipped if the
+  previous scan is still running, and the ARP table is read once per scan
+  (bounded) rather than shelling out per host.
+
 ## [0.3.0] — 2026-06-17
 
 - Concurrent host scanning. The deep phase (ports, TLS, HTTP) now runs several

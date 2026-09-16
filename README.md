@@ -83,6 +83,37 @@ once the scan finishes; pass `-keep-open` to leave it up for scrolling.
 Drop the binary on the stick and point `-out` at the drive (e.g. `-out E:\`) so
 reports land on the USB, not the host you plugged into.
 
+## Monitor mode
+
+Instead of scanning once and exiting, dragnet can watch a network continuously
+and tell you when it changes:
+
+```
+dragnet monitor -target 192.168.1.0/24 -interval 10m
+```
+
+This scans every 10 minutes, records each scan to a SQLite database, and serves
+a live dashboard at `http://127.0.0.1:8787` showing current hosts and a timeline
+of changes. It runs until you press Ctrl+C.
+
+Changes it detects: a host joins the network or goes dark, a port opens or
+closes on a known host, a TLS certificate crosses into the expiry-warning
+window, a host newly trips the honeypot heuristic, or a device's fingerprint
+changes.
+
+| flag | default | meaning |
+|------|---------|---------|
+| `-target` | *(required)* | CIDR or IP to watch |
+| `-interval` | `10m` | time between scans |
+| `-listen` | `127.0.0.1:8787` | dashboard bind address; `0.0.0.0:PORT` to expose it |
+| `-db` | `dragnet-monitor.db` | SQLite database path |
+| `-ports`, `-speed`, `-timeout`, `-concurrency`, `-host-concurrency` | | same as one-shot scan |
+
+The dashboard binds to localhost only by default — safe to run on a machine you
+don't fully trust. On an always-on box (like a homelab server) use
+`-listen 0.0.0.0:8787` to reach it from elsewhere on the network. The database
+persists across restarts, so history survives a reboot.
+
 ## Install
 
 Grab a prebuilt binary from the [releases page](https://github.com/happygream/dragnet/releases),
@@ -125,6 +156,8 @@ internal/discover/  CIDR expansion + liveness sweep
 internal/scan/      port scan, banner grab, TLS, HTTP audit, orchestrator
 internal/tui/       Bubble Tea amber/noir interface
 internal/report/    JSON + self-contained HTML writers
+internal/monitor/   continuous-monitor scheduler, diff engine, SQLite store
+internal/dashboard/ live localhost web dashboard for monitor mode
 ```
 
 ## A note on responsible use

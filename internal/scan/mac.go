@@ -1,10 +1,12 @@
 package scan
 
 import (
+	"context"
 	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // ouiVendors maps an OUI prefix (first three MAC octets, uppercase, no
@@ -39,37 +41,53 @@ var ouiVendors = map[string]string{
 }
 
 var macLineRe = regexp.MustCompile(`(?i)([0-9a-f]{1,2}[:-]){5}[0-9a-f]{1,2}`)
+var ipRe = regexp.MustCompile(`\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b`)
 
-// ResolveMAC reads the OS ARP table and returns the MAC and best-effort vendor
-// for an IP on the local subnet. Returns empty strings if not found (e.g. the
-// host is off-link, behind a router, or the table has not been populated).
-func ResolveMAC(ip string) (mac, vendor string) {
-	out, err := arpLookup(ip)
-	if err != nil {
-		return "", ""
-	}
-	m := macLineRe.FindString(out)
-	if m == "" {
-		return "", ""
-	}
-	mac = normalizeMAC(m)
-	vendor = vendorFor(mac)
-	return mac, vendor
-}
+// ARPTable maps IP -> normalized MAC, read once from the OS ARP cache.
+type ARPTable map[string]string
 
-// arpLookup shells out to the platform ARP utility for a single IP.
-func arpLookup(ip string) (string, error) {
+// LoadARPTable reads the entire OS ARP/neighbor table in a single call, bounded
+// by a short timeout so a slow or hung arp never stalls a scan. Reading it once
+// per scan is far cheaper and more robust than shelling out per host.
+func LoadARPTable() ARPTable {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	var out []byte
 	switch runtime.GOOS {
 	case "windows":
-		b, err := exec.Command("arp", "-a", ip).Output()
-		return string(b), err
+		out, _ = exec.CommandContext(ctx, "arp", "-a").Output()
 	default:
-		b, err := exec.Command("arp", "-n", ip).Output()
-		if err != nil {
-			b, err = exec.Command("ip", "neigh", "show", ip).Output()
+		out, _ = exec.CommandContext(ctx, "ip", "neigh").Output()
+		if len(out) == 0 {
+			out, _ = exec.CommandContext(ctx, "arp", "-n").Output()
 		}
-		return string(b), err
 	}
+
+	table := ARPTable{}
+	for _, line := range strings.Split(string(out), "\n") {
+		ip := ipRe.FindString(line)
+		mac := macLineRe.FindString(line)
+		if ip != "" && mac != "" {
+			table[ip] = normalizeMAC(mac)
+		}
+	}
+	return table
+}
+
+// Lookup returns the MAC and best-effort vendor for an IP from a loaded table.
+func (t ARPTable) Lookup(ip string) (mac, vendor string) {
+	mac = t[ip]
+	if mac == "" {
+		return "", ""
+	}
+	return mac, vendorFor(mac)
+}
+
+// ResolveMAC reads the ARP table and returns the MAC and vendor for a single
+// IP. Kept for one-shot callers; scans should load the table once instead.
+func ResolveMAC(ip string) (mac, vendor string) {
+	return LoadARPTable().Lookup(ip)
 }
 
 func normalizeMAC(m string) string {

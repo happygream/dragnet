@@ -71,6 +71,9 @@ func Run(ctx context.Context, cfg Config) <-chan Event {
 		}
 
 		// Deep phase: port + TLS + HTTP per live host, several hosts at once.
+		// Read the ARP table once here rather than per host.
+		arp := LoadARPTable()
+
 		hostConc := cfg.HostConcurrency
 		if hostConc <= 0 {
 			hostConc = 8
@@ -92,7 +95,7 @@ func Run(ctx context.Context, cfg Config) <-chan Event {
 					default:
 					}
 					h := &live[i]
-					deepScan(ctx, h, cfg)
+					deepScan(ctx, h, cfg, arp)
 					hc := *h
 					out <- Event{Kind: EvHostDone, Host: &hc, Note: "swept " + h.IP}
 				}
@@ -118,11 +121,9 @@ func Run(ctx context.Context, cfg Config) <-chan Event {
 
 // deepScan runs MAC resolution, port scan, per-port TLS/HTTP inspection,
 // honeypot detection and device fingerprinting for a single host, filling
-// the host in place.
-func deepScan(ctx context.Context, h *model.Host, cfg Config) {
-	// MAC/vendor is only meaningful for on-link hosts; the ARP entry exists
-	// because discovery already connected to this IP.
-	h.MAC, h.Vendor = ResolveMAC(h.IP)
+// the host in place. The ARP table is read once by the caller.
+func deepScan(ctx context.Context, h *model.Host, cfg Config, arp ARPTable) {
+	h.MAC, h.Vendor = arp.Lookup(h.IP)
 
 	h.OpenPorts = ScanHost(ctx, h.IP, cfg.Ports, cfg.Concurrency, cfg.Timeout)
 

@@ -20,6 +20,13 @@ import (
 var version = "dev"
 
 func main() {
+	// Subcommand dispatch: "dragnet monitor ..." runs the continuous monitor;
+	// anything else falls through to the one-shot scan.
+	if len(os.Args) > 1 && os.Args[1] == "monitor" {
+		runMonitor(os.Args[2:])
+		return
+	}
+
 	var (
 		target   = flag.String("target", "", "CIDR or IP to scan, e.g. 192.168.1.0/24")
 		portsArg = flag.String("ports", "top", `"top", "all", or range "1-1024"`)
