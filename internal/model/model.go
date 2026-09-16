@@ -56,6 +56,10 @@ type Host struct {
 	TLS       []TLSInfo   `json:"tls,omitempty"`
 	HTTP      []HTTPInfo  `json:"http,omitempty"`
 
+	// Device is a best-guess device/OS label synthesized from banners,
+	// certificates, headers, vendor and port composition. Heuristic.
+	Device string `json:"device,omitempty"`
+
 	// Honeypot is set when the host's response pattern suggests a decoy
 	// (many classic-service ports open, but services that normally greet
 	// stay silent). HoneypotReason explains the call.

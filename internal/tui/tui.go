@@ -262,6 +262,18 @@ func renderHost(h *model.Host) string {
 		noteStyle.Render(h.RTT),
 	)
 
+	if h.Device != "" || h.Vendor != "" {
+		label := h.Device
+		if label == "" {
+			label = h.Vendor
+		}
+		detail := svcStyle.Render(label)
+		if h.MAC != "" {
+			detail += "  " + mutedStyle.Render(h.MAC)
+		}
+		fmt.Fprintf(&b, "    %s %s\n", mutedStyle.Render("~"), detail)
+	}
+
 	if h.Honeypot {
 		fmt.Fprintf(&b, "    %s  %s\n",
 			warnStyle.Render("⚠ PROBABLE DECOY"),

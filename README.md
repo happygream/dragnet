@@ -68,8 +68,10 @@ dragnet -target 10.0.0.5 -ports 22,80,443 -no-tui
 |------|---------|---------|
 | `-target` | *(required)* | CIDR or IP, e.g. `192.168.1.0/24` |
 | `-ports` | `top` | `top`, `all`, a range `1-1024`, or a list `22,80,443` |
-| `-concurrency` | `512` | max concurrent probes |
-| `-timeout` | `800ms` | per-probe timeout |
+| `-speed` | `balanced` | preset: `fast`, `balanced`, or `thorough` |
+| `-concurrency` | preset | max concurrent probes per host (overrides preset) |
+| `-host-concurrency` | preset | hosts scanned in parallel (overrides preset) |
+| `-timeout` | preset | per-probe timeout (overrides preset) |
 | `-out` | `.` | directory for saved reports (point it at your USB) |
 | `-no-tui` | `false` | plain log output instead of the TUI |
 | `-keep-open` | `false` | keep the TUI open after the scan finishes (default: exit automatically) |

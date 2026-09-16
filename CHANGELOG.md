@@ -2,6 +2,17 @@
 
 All notable changes to dragnet are documented here.
 
+## [0.3.0] — 2026-06-17
+
+- Concurrent host scanning. The deep phase (ports, TLS, HTTP) now runs several
+  hosts in parallel instead of one at a time. Tunable with `-host-concurrency`.
+- MAC address + vendor lookup. For on-link hosts, dragnet reads the ARP table
+  and maps the OUI to a vendor.
+- Device/OS fingerprinting from SSH banners, TLS cert subjects, HTTP Server
+  headers, MAC vendor and port composition. Surfaced in the TUI and reports.
+- Speed presets: `-speed fast|balanced|thorough`. Explicit `-timeout`,
+  `-concurrency` and `-host-concurrency` flags override the chosen preset.
+
 ## [0.2.0] — 2026-06-16
 
 - Honeypot/decoy detection. Hosts that expose many classic lure ports

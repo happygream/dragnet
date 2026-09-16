@@ -23,8 +23,10 @@ func main() {
 	var (
 		target   = flag.String("target", "", "CIDR or IP to scan, e.g. 192.168.1.0/24")
 		portsArg = flag.String("ports", "top", `"top", "all", or range "1-1024"`)
-		conc     = flag.Int("concurrency", 512, "max concurrent probes")
-		timeout  = flag.Duration("timeout", 800*time.Millisecond, "per-probe timeout")
+		speed    = flag.String("speed", "balanced", `preset: "fast", "balanced", or "thorough"`)
+		conc     = flag.Int("concurrency", 0, "max concurrent probes per host (0 = use preset)")
+		hostConc = flag.Int("host-concurrency", 0, "hosts scanned in parallel (0 = use preset)")
+		timeout  = flag.Duration("timeout", 0, "per-probe timeout (0 = use preset)")
 		outDir   = flag.String("out", ".", "directory for saved reports")
 		noTUI    = flag.Bool("no-tui", false, "plain output instead of the TUI")
 		keepOpen = flag.Bool("keep-open", false, "keep the TUI open after the scan finishes (default: exit automatically)")
@@ -50,12 +52,28 @@ func main() {
 
 	mode := detectMode()
 
+	preset, err := resolveSpeed(*speed)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "dragnet:", err)
+		os.Exit(2)
+	}
+	if *conc > 0 {
+		preset.Concurrency = *conc
+	}
+	if *hostConc > 0 {
+		preset.HostConcurrency = *hostConc
+	}
+	if *timeout > 0 {
+		preset.Timeout = *timeout
+	}
+
 	cfg := scan.Config{
-		Target:      *target,
-		Ports:       ports,
-		Mode:        mode,
-		Concurrency: *conc,
-		Timeout:     *timeout,
+		Target:          *target,
+		Ports:           ports,
+		Mode:            mode,
+		Concurrency:     preset.Concurrency,
+		HostConcurrency: preset.HostConcurrency,
+		Timeout:         preset.Timeout,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

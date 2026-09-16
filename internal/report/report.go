@@ -71,6 +71,18 @@ func renderHTML(r model.Report) string {
 		fmt.Fprintf(&b, `<article class="host"><div class="host-head"><h2>%s</h2><span class="hn">%s</span><span class="rtt">%s</span></div>`,
 			html.EscapeString(h.IP), hostname, html.EscapeString(h.RTT))
 
+		if h.Device != "" || h.Vendor != "" {
+			label := h.Device
+			if label == "" {
+				label = h.Vendor
+			}
+			macPart := ""
+			if h.MAC != "" {
+				macPart = fmt.Sprintf(` <span class="mac">%s</span>`, html.EscapeString(h.MAC))
+			}
+			fmt.Fprintf(&b, `<div class="device">%s%s</div>`, html.EscapeString(label), macPart)
+		}
+
 		if h.Honeypot {
 			fmt.Fprintf(&b, `<div class="decoy"><span class="decoy-tag">PROBABLE DECOY</span> %s</div>`,
 				html.EscapeString(h.HoneypotReason))
@@ -151,6 +163,8 @@ header{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--
 .host-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
 .host-head h2{margin:0;font-size:18px;color:var(--amber);letter-spacing:.04em}
 .hn{color:var(--muted)}
+.device{margin:-6px 0 12px 0;font-size:13px;color:var(--ink)}
+.device .mac{color:var(--muted);font-size:12px;margin-left:8px}
 .decoy{margin:-4px 0 14px 0;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
 .decoy-tag{background:rgba(217,83,79,.15);color:var(--bad);font-weight:700;letter-spacing:.08em;padding:2px 8px;border:1px solid var(--bad)}
 .rtt{margin-left:auto;color:var(--amber-dim);font-size:12px}
