@@ -1,0 +1,36 @@
+services:
+  dragnet-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dragnet:latest
+    container_name: dragnet-monitor
+    restart: unless-stopped
+
+    # Host networking is required for a network scanner: it lets dragnet see
+    # the real LAN and the host ARP table (for MAC/vendor lookup). Without it
+    # the container is isolated on Docker's bridge and can neither reach your
+    # subnet properly nor resolve hardware addresses.
+    network_mode: host
+
+    # Persist the SQLite database across restarts/reboots. The named volume is
+    # mounted at /data; the monitor writes its db there.
+    volumes:
+      - dragnet-data:/data
+
+    # Command: watch the LAN, dashboard on localhost only (127.0.0.1). Reach it
+    # from your laptop with an SSH tunnel:
+    #   ssh -L 8787:127.0.0.1:8787 you@homelab
+    # then open http://127.0.0.1:8787 locally.
+    #
+    # Adjust -target to your subnet and -interval to taste.
+    command: >
+      monitor
+      -target 192.168.1.0/24
+      -interval 10m
+      -listen 192.168.1.52:8787
+      -db /data/dragnet-monitor.db
+      -speed balanced
+
+volumes:
+  dragnet-data:
