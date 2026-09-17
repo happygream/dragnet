@@ -26,9 +26,9 @@ services:
     # Adjust -target to your subnet and -interval to taste.
     command: >
       monitor
-      -target 192.168.1.0/24
+      -target 192.168.0.0/24
       -interval 10m
-      -listen 192.168.1.52:8787
+      -listen 127.0.0.1:8787
       -db /data/dragnet-monitor.db
       -speed balanced
 
